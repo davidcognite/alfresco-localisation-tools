@@ -1,19 +1,13 @@
 Localisation Tools
 ==================
 
-Here is a set of tools I've created to assist with generating and checking translations for [Alfresco](http://www.alfresco.com). These are slightly modified versions of ones we use internally.
+This is a bash script that is designed to work with [Alfresco](https://github.com/Alfresco/community-edition) and Alfresco's modules e.g. [RM](https://github.com/Alfresco/records-management) and projects e.g. [Aikau](https://github.com/Alfresco/Aikau).
 
-They're designed to run in a Unix shell, so will run fine in Mac OS X's Terminal or under Cygwin. They should be run from the directory containing the Alfresco source code with the language bundle installed.
+It enables easy management of translation bundles, with the ability to generate (export) a bundle of properties files, import them, as well as perform some automated QA on the files.
 
-* **alfresco-translation-check.sh**
-    
-   **USAGE: alfresco-translation-check.sh path/to/write/reports.txt [additional_locales]**
-   
-    This tool generates a series of reports comparing the translated properties files with the English properties files to show you:
- 
-    * Strings missing form the translation
-    * Strings in the translated language that match the English
-    * Files containing missing strings.
-    * Strings definitions that are duplicated.
-    * Strings wich include variables and single quotes (quotes should be duplicated when the UI string contains a variable).
-    * Strings which contain unicode that is incorrectly escaped.
+For individual projects, it makes use of a l10n.properties file to override configuration, e.g. for the search path used to determine which files should be translated (see [example](https://github.com/davidcognite/Aikau/blob/develop/l10n.properties))
+
+TODO
+====
+
+Update this document with a list of commands and an explaination of how it works.
