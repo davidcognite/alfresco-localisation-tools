@@ -24,10 +24,14 @@ See here for project specific overrides.
 Commands
 ========
 
+## Generating bundles:
+
+These commands use the _MESSAGE_SEARCH_PATH_ and _EXCLUDED_FILES_ config vars to whitelist and then filter the list of _.properties_ files to include
+
 ```
 l10n files
 ```
-returns a list of the files (in the default locale) that are eligable for translation. This uses the _MESSAGE_SEARCH_PATH_ and _EXCLUDED_FILES_ variables to build the list.
+returns a list of the files (in the default locale) that are eligable for translation. 
 
 ```
 l10n files <locale>
@@ -44,10 +48,12 @@ l10n install <path>
 ```
 overlays a directory of properties files from _path_ to _$WORK_DIR_. Used to install a bundle following translation.
 
+##Checking installed bundles
 ```
 l10n count
 ```
 runs a quick count of all the files and strings for each of the supported locales.
+
 
 ```
 l10n check <path>
@@ -64,9 +70,7 @@ runs a rudimentary QA script that checks each translation for completeness and t
 
 It also generates one summary report with counts so you can quickly review what the status of a translation is.
 
-
-String Encoding
-===============
+##String Encoding
 
 Alfresco and related modules require properties files to contain only ASCII characters, anytihng outside of that character set must be encoded as a unicode escape sequence. I've included several shortcuts to assist with decoding already escaped strings, or encoding strings that aren't escaped.
 
