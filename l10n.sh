@@ -270,25 +270,16 @@ install_files()
 {
    cd $1 > /dev/null
    echo "Installing from `pwd` to $WORK_DIR using $INSTALL_CMD"
-   #Check DIR is correct.
-   if [[ -d "projects" || -d "enterpriseprojects" || -d "modules" || -d "privatemodules" || -d "rm-share" ]]
-   then
-      # All translated properties files include an underscore, check for that before installing the bundle.
-      if [[ `find . -name "*.properties" | grep -v "_" | wc -l` -eq 0 ]] 
-      then 
-         $INSTALL_CMD . "$WORK_DIR" > /dev/null
-      else
-         echo 
-         echo "FAILURE: all or some of the properties files do not include a locale in: `pwd`"
-         find . -name "*.properties" | grep -v "_"
-         echo
-      fi
+   # All translated properties files include an underscore, check for that before installing the bundle.
+   if [[ `find . -name "*.properties" | grep -v "_" | wc -l` -eq 0 ]] 
+   then 
+      $INSTALL_CMD . "$WORK_DIR" > /dev/null
    else
       echo 
-      echo "FAILURE: Could not find projects or enterpriseprojects or modules directory in $1 - is the path correct?"
+      echo "FAILURE: all or some of the properties files do not include a locale in: `pwd`"
+      find . -name "*.properties" | grep -v "_"
       echo
    fi
-   #pipe the output to /dev/null to prevent the path being printed & distracting the user from the output or error.
    cd - > /dev/null
 }
 
