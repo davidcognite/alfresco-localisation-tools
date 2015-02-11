@@ -73,7 +73,15 @@ if [[ $# -gt 1 ]]
 then
    if [[ $1 = "--config-override" || $1 = "-c" ]]
    then
-      if [ $2 = "CLOUD" ]
+      if [ $2 = "RM" ]
+      then
+         echo "Applying config overrides for Records Management"
+         MESSAGE_SEARCH_PATH="rm-server/config rm-share/config"
+         EXTENSION_PREFIX=-RM
+
+         SETTINGS_LOADED=true
+         SETTINGS_LOCATION="hard coded RM overrides"
+      elif [ $2 = "CLOUD" ]
       then
          echo "Applying config override for Alfresco in the cloud"
          # MESSAGE_SEARCH_PATH="$MESSAGE_SEARCH_PATH privatemodules/thor privatemodules/thor-share"
@@ -104,10 +112,14 @@ fi
 
 loadSettings()
 {
-   echo "Loading settings from: $WORK_DIR"
-   source $WORK_DIR/$SETTINGS
-   SETTINGS_LOADED=true
-   SETTINGS_LOCATION=$WORK_DIR/$SETTINGS
+   # Only run once:
+   if [[ "$SETTINGS_LOADED" = false ]]
+   then
+      echo "Loading settings from: $WORK_DIR"
+      source $WORK_DIR/$SETTINGS
+      SETTINGS_LOADED=true
+      SETTINGS_LOCATION=$WORK_DIR/$SETTINGS
+   fi
 }
 
 # Set the work directory (if it hasn't already been set) & load settings from it.
