@@ -81,6 +81,7 @@ then
 
          SETTINGS_LOADED=true
          SETTINGS_LOCATION="hard coded RM overrides"
+         WORK_DIR=$PROJECT_DIR/code
       elif [ $2 = "CLOUD" ]
       then
          echo "Applying config override for Alfresco in the cloud"
@@ -268,13 +269,13 @@ get_files()
    if [[ $# -lt 1  ]]
    then
       # remove all files that have a supported locale set to return just the default
-      find $MESSAGE_SEARCH_PATH -name '*.properties*' -print 2> /dev/null | grep -Ev \(${EXCLUDED_FILES// /\|}\) | grep -v -E _\(${SUPPORTED_LANGUAGES//\ /\|}\).properties
+      find $MESSAGE_SEARCH_PATH -name '*.properties*' -print 2> /dev/null | grep -a -Ev \(${EXCLUDED_FILES// /\|}\) | grep -a -v -E _\(${SUPPORTED_LANGUAGES//\ /\|}\).properties
    elif [[ $1 = "all" ]]
    then
-      find $MESSAGE_SEARCH_PATH -name '*.properties*' -print 2> /dev/null | grep -Ev \(${EXCLUDED_FILES// /\|}\)
+      find $MESSAGE_SEARCH_PATH -name '*.properties*' -print 2> /dev/null | grep -a -Ev \(${EXCLUDED_FILES// /\|}\)
    else
       # only return the files for the locale passed in
-      find $MESSAGE_SEARCH_PATH -name '*.properties*' -print 2> /dev/null | grep -Ev \(${EXCLUDED_FILES// /\|}\) | grep _$1.properties
+      find $MESSAGE_SEARCH_PATH -name '*.properties*' -print 2> /dev/null | grep -a -Ev \(${EXCLUDED_FILES// /\|}\) | grep -a _$1.properties
    fi
 }
 
@@ -283,13 +284,13 @@ install_files()
    cd $1 > /dev/null
    echo "Installing from `pwd` to $WORK_DIR using $INSTALL_CMD"
    # All translated properties files include an underscore, check for that before installing the bundle.
-   if [[ `find . -name "*.properties" | grep -v "_" | wc -l` -eq 0 ]] 
+   if [[ `find . -name "*.properties" | grep -a -v "_" | wc -l` -eq 0 ]] 
    then 
       $INSTALL_CMD . "$WORK_DIR" > /dev/null
    else
       echo 
       echo "FAILURE: all or some of the properties files do not include a locale in: `pwd`"
-      find . -name "*.properties" | grep -v "_"
+      find . -name "*.properties" | grep -a -v "_"
       echo
    fi
    cd - > /dev/null
@@ -355,7 +356,7 @@ diff_files()
    
    ## WORD COUNT
    # This gets all added or modified lines from the diff file
-   WORD_COUNT=`cat $DIFF_FILE | grep -e "^+[A-z]"|cut -d= -f2|wc -w`
+   WORD_COUNT=`cat $DIFF_FILE | grep -a -e "^+[A-z]"|cut -d= -f2|wc -w`
    echo "$WORD_COUNT words have been added or modified"
    echo "Words added or modified between these revisions: $WORD_COUNT" >> $TEXT_FILE
    echo "" >> $TEXT_FILE
@@ -366,7 +367,7 @@ diff_files()
    # then tidy the output by removing unwanted text decoration. 
    echo "Modified Files" >> $TEXT_FILE
    echo "" >> $TEXT_FILE
-   cat $DIFF_FILE | grep -A3 "Index: " | cut -d"(" -f2 | cut -d")" -f1 | grep -v "revision " | grep -v -e "===" | cut -d: -f2 | cut -d" " -f2 >> $TEXT_FILE 
+   cat $DIFF_FILE | grep -a -A3 "Index: " | cut -d"(" -f2 | cut -d")" -f1 | grep -a -v "revision " | grep -a -v -e "===" | cut -d: -f2 | cut -d" " -f2 >> $TEXT_FILE 
    #"
    echo "" >> $TEXT_FILE
       
@@ -375,7 +376,7 @@ diff_files()
    echo "Writing list of files that have been added"
    echo "" >> $TEXT_FILE
    echo "New Files" >> $TEXT_FILE
-   grep "svn: Unable to find" $DIFF_FILE |cut -d"'" -f2 >> $TEXT_FILE
+   grep -a "svn: Unable to find" $DIFF_FILE |cut -d"'" -f2 >> $TEXT_FILE
    #'
 
    ## CLEAN UP
@@ -392,10 +393,10 @@ count()
    done
 
    echo "Counting Strings:"
-   echo -n "English: "; grep "=" `get_files` | wc -l
+   echo -n "English: "; grep -a "=" `get_files` | wc -l
    for language in `echo "$SUPPORTED_LANGUAGES"`
    do
-      echo -n "$language:"; grep "=" `get_files "$language"` | wc -l 
+      echo -n "$language:"; grep -a "=" `get_files "$language"` | wc -l 
    done
 }
 
@@ -417,7 +418,7 @@ check()
 
    if [[ "$isSVN" = true ]]
    then
-      echo `svn info | grep "URL:"` >> $reportFile
+      echo `svn info | grep -a "URL:"` >> $reportFile
    else
       echo "Git Origin URL, branch, latest commit hash and commit timestamp:"
       echo $GIT_INFO >> $reportFile
@@ -430,7 +431,7 @@ check()
    #TODO: Ignore this with git.
    if [[ "$isSVN" = true ]]
    then
-      if [[ `svn status | grep "_*.properties" | wc -l` -ne 0 ]]
+      if [[ `svn status | grep -a "_*.properties" | wc -l` -ne 0 ]]
       then
          echo "WARNING: There are uncommited changes to localised properties files" >> $reportFile
          echo "" >> $reportFile
@@ -438,13 +439,13 @@ check()
    fi
 
    #remove all comments with the hash & any line that contains an equals that is escaped.
-   grep "=" `get_files` | grep -v ".properties:#" | grep -v "'/="  > $tmpENfile2
+   grep -a "=" `get_files` | grep -a -v ".properties:#" | grep -a -v "'/="  > $tmpENfile2
    echo -n "."
 
    #ensure consistent line endings for comparison
    dos2unix $tmpENfile2 2> /dev/null
 
-   cat $tmpENfile2 | cut -d= -f1 | grep -v "<" | sed 's/[ ]*$//' | sort | uniq -u > $tmpENfile
+   cat $tmpENfile2 | cut -d= -f1 | grep -a -v "<" | sed 's/[ ]*$//' | sort | uniq -u > $tmpENfile
    # generate a list of: 
    #  - english strings in the format: {filename minus extension}:{property}
    enFileCount=`get_files | wc -l`
@@ -475,20 +476,20 @@ check()
       outputLNfile=$1/$REVISION-$language-check.txt
       #  - strings for each LN in format: {filename minus extension minus locale}@{property}
       # cut removes the actual translation
-      # grep -v "<" removes any lines with HTML in - fixes a bug where lines of HTML wrap and match the grep for "=", but shouldn't.
+      # grep -a -v "<" removes any lines with HTML in - fixes a bug where lines of HTML wrap and match the grep -a for "=", but shouldn't.
       # the first sed removes trailing spaces
       # second sed removes the locale from the input filename to make direct comparisons easier
       # all comments are then removed.
       # changes to the greps and pipes here need to be reflected above when $tmpENfile is generated
       # adds /dev/null to list of files, so there is always at least one file to search, otherwise pipe breaks.
-      # also now pipes to a grep -v to remove a line with an equals on that should be ignored!
-      grep "=" /dev/null `get_files "$language"` | grep -v "/=" > $tmpLNfile2
+      # also now pipes to a grep -a -v to remove a line with an equals on that should be ignored!
+      grep -a "=" /dev/null `get_files "$language"` | grep -a -v "/=" > $tmpLNfile2
 
       #ensure consistent line endings for comparison
       dos2unix $tmpLNfile2 2> /dev/null
 
-      cat $tmpLNfile2 | sed "s/_$language.properties/.properties/g" | grep -v ".properties:#" > $tmpLNfile3
-      cat $tmpLNfile3 | cut -d= -f1| grep -v "<" | sed 's/[ ]*$//'  | sort | uniq -u > $tmpLNfile
+      cat $tmpLNfile2 | sed "s/_$language.properties/.properties/g" | grep -a -v ".properties:#" > $tmpLNfile3
+      cat $tmpLNfile3 | cut -d= -f1| grep -a -v "<" | sed 's/[ ]*$//'  | sort | uniq -u > $tmpLNfile
       echo -n "."
 
       # Write Status Line to Output
@@ -544,14 +545,14 @@ check()
       # - add a list of strings that appear twice or more in the bundle (duplicate string definitions)
       echo "Duplicated string definitions in $language:" >> $outputLNfile
       echo "-------------------------------------------------------------------------" >> $outputLNfile
-      cat $tmpLNfile3 | cut -d= -f1| grep -v "<" | sed 's/[ ]*$//' | sort | uniq -d >> $outputLNfile
+      cat $tmpLNfile3 | cut -d= -f1| grep -a -v "<" | sed 's/[ ]*$//' | sort | uniq -d >> $outputLNfile
       echo "" >> $outputLNfile
       echo -n "."
       
       # Find strings with non duplicated quotes
       echo "Strings with variables and single quotes:" >> $outputLNfile
       echo "-------------------------------------------------------------------------" >> $outputLNfile
-      cat $tmpLNfile3 | grep "}" |sed -n "/[^']'[^']/p" | grep -v ".properties.ftl"> $tmpLNfile4
+      cat $tmpLNfile3 | grep -a "}" |sed -n "/[^']'[^']/p" | grep -a -v ".properties.ftl"> $tmpLNfile4
       echo "Strings with missing double quotes:" `cat $tmpLNfile4 | wc -l` >> $reportFile
       echo -n "."
       cat $tmpLNfile4 >> $outputLNfile
@@ -573,14 +574,14 @@ check()
       strings=IGNORED_LN_STRINGS_$language
       for excluded in `echo $IGNORED_STRINGS ${!strings}` 
       do
-         cat $tmpLNfile4 | grep -v "$excluded" > $tmpLNfile5
+         cat $tmpLNfile4 | grep -a -v "$excluded" > $tmpLNfile5
          mv $tmpLNfile5 $tmpLNfile4
       done
 
       # When the EN value is blank (i.e. there is nothing after the =), the translated language is allowed to also be blank.
 
       echo -n "."
-      cat $tmpLNfile4 | grep -v -E "\=$" > $tmpLNfile5
+      cat $tmpLNfile4 | grep -a -v -E "\=$" > $tmpLNfile5
       mv $tmpLNfile5 $tmpLNfile4
 
       echo "Strings matching the English:" `cat $tmpLNfile4 | wc -l` >> $reportFile
@@ -596,7 +597,7 @@ check()
       # starting with a letter because they're rather obscure (two usages at last count) I couldn't find a way to match them but not match
       # valid words like "succeeded" and "essay" which are more common. Thankfully references to Bono's band are rare as well.
       echo -n "."
-      cat $tmpLNfile2 | grep -i -E "[^\\]u[0-9]{1}" > $tmpLNfile4
+      cat $tmpLNfile2 | grep -a -i -E "[^\\]u[0-9]{1}" > $tmpLNfile4
 
       echo "Strings with incorrectly escaped unicode:" >> $outputLNfile
       echo "-------------------------------------------------------------------------" >> $outputLNfile
@@ -619,7 +620,7 @@ count_bundle()
 {
    echo "Counting properties files and strings in: $1"
    echo -n "Files: "; find $1 -name "*.properties*" -print | wc -l
-   echo -n "Strings: "; grep "=" `find $1 -name "*.properties*" -print` | wc -l
+   echo -n "Strings: "; grep -a "=" `find $1 -name "*.properties*" -print` | wc -l
 }
 
 check_encoding()
@@ -641,7 +642,7 @@ check_encoding()
    # "HTML", "TI-XX Graphing Calculator" and "CCP4 Electron Density Map" are false positives that are returned. They're actually ASCII files.
    for file in $files
    do
-      file $file | grep -v ": ASCII" | grep -v "HTML" | grep -v "TI-XX Graphing Calculator" | grep -v "CCP4 Electron Density Map"
+      file $file | grep -a -v ": ASCII" | grep -a -v "HTML" | grep -a -v "TI-XX Graphing Calculator" | grep -a -v "CCP4 Electron Density Map"
    done
    
    # Encoding errors typically show up as question marks in the files.
@@ -649,7 +650,7 @@ check_encoding()
    
    for file in $files
    do
-      grep -H "??" $file
+      grep -a -H "??" $file
    done
    
 }
