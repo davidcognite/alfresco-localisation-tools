@@ -19,7 +19,7 @@ export WORK_DIR=/full/path/to/code/root
 Configuration
 =============
 
-See here for project specific overrides.
+See here for project specific overrides: https://github.com/davidcognite/alfresco-localisation-tools/wiki/l10n.properties
 
 Commands
 ========
